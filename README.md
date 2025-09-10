@@ -1,114 +1,74 @@
-# Chord Protocol with Fault Tolerance Enhancements
+# Chord-Based Distributed System with Fault Tolerance
 
 ## Overview
 
-This project implements the **Chord Distributed Hash Table (DHT)** protocol with **robust fault tolerance mechanisms**. It simulates node joins, departures, and failures in a peer-to-peer ring topology, ensuring the system remains consistent, available, and resilient.
+This project implements a **Chord-based Distributed Hash Table (DHT)** with added **fault tolerance** mechanisms to ensure reliability and robustness in the presence of node failures. Chord is a distributed system that provides efficient lookups, insertion, and deletion of key-value pairs in a distributed ring topology. The system is designed to handle node failures gracefully, ensuring that the system remains operational even when some nodes become unavailable.
 
-The implementation enhances standard Chord with:
-- **Successor lists**
-- **Failure detection (ping mechanism)**
-- **Data replication**
-- **Graceful exit and stabilization**
+The fault tolerance mechanisms include:
+- **Successor List** to maintain multiple successor nodes for better fault resilience.
+- **Periodic Health Checks** (ping mechanism) to verify node liveness.
+- **Data Replication** across multiple successors to ensure data availability.
+- **Graceful Recovery** mechanisms to handle failures and stabilize the ring after node crashes or departures.
 
----
+## Features
 
-## Key Features
+- **Ring-based Architecture**: Each node is assigned an identifier based on a hash of its IP address and port. Nodes are arranged in a logical ring structure where each node has a predecessor and a successor.
+  
+- **Fault Tolerance**: 
+  - **Successor List**: Each node maintains a list of `r` successors to ensure availability if the immediate successor fails.
+  - **Failure Detection**: Periodic pings are sent to verify the liveness of nodes, particularly successors and predecessors.
+  - **Data Replication**: Data is replicated across multiple successors to avoid data loss in case of node failure.
+  
+- **Automatic Stabilization**: Nodes automatically stabilize the ring periodically, ensuring that successors and predecessors are updated when necessary.
 
-- **Efficient Lookup**: O(log N) hop complexity using finger tables
-- **Self-Stabilization**: Handles joins and failures using periodic stabilization
--  **Fault Tolerance**: Redundant successors and data replication ensure high availability
--  **Graceful Exit**: Nodes exit without disrupting the ring structure
+- **Graceful Node Deletion**: When a node leaves or is deleted, the system ensures that the ring is restructured without any data loss or disruptions. Predecessors and successors are updated accordingly.
 
----
+## Installation
 
-## About Chord
+### Prerequisites
 
-Chord is a decentralized protocol for efficient key-value lookups in a dynamic peer-to-peer network. Nodes are arranged in a logical ring, and data is distributed using consistent hashing.
+- Python 3.x
+- `socket` library for network communication
+- `threading` library for multi-threading
+- `hashlib` for hashing node IDs
+- `sys` for command-line argument parsing
 
-Each node:
-- Has a unique ID in a `2^m` identifier space
-- Maintains:
-  - A **successor pointer**
-  - A **predecessor pointer**
-  - A **finger table** for fast routing
+##Usage
+Running the System
+Creating a New Ring: To create the first node in the ring, run the following command:
 
----
+bash
+python Noddy.py <port_number>
 
-## Fault Tolerance Mechanisms Implemented
+bash
+python Noddy.py 5000
+This will start the node on port 5000 and it will create the ring as the first node.
 
-1. **Successor List**
-   - Each node maintains a list of `r` successors.
-   - Used as backup if the immediate successor fails.
+Joining the Ring: To add a new node to an existing ring, use the following command:
 
-2. **Ping Mechanism**
-   - Periodic heartbeats to detect failed neighbors.
-   - Removes dead nodes from the ring automatically.
+bash
+python Noddy.py <port_number> <existing_node_ip> <existing_node_port>
 
-3. **Data Replication**
-   - Data is replicated across the `r` successors.
-   - Ensures availability even when nodes fail.
+bash
+python Noddy.py 5001 127.0.0.1 5000
+This will start a node on port 5001 and connect it to the node running on 127.0.0.1:5000.
 
-4. **Graceful Exit**
-   - Transfers keys and updates neighbors before a node leaves.
+Deleting a Node: To delete the current node from the ring, simply type exit in the console. This will trigger the deletion process where the node's successor and predecessor are notified, and the ring is updated.
 
----
+Checking the Node's State: The system prints useful information during the operation, including:
 
-## Ring Management
+Node ID
+Successor and Predecessor IDs
+Finger table
+Data store contents
+Stabilization status
+Available Operations
+The system supports the following operations, which can be invoked through RPC calls:
 
-### Joining the Ring
-
-1. New node contacts any known node.
-2. Runs `find_successor(ID)` to find its place.
-3. Updates its successor/predecessor.
-4. Receives key responsibilities and updates routing tables.
-
-### Stabilization
-
-- Periodic process to:
-  - Fix broken successor/predecessor links
-  - Update finger tables
-  - Handle newly joined or failed nodes
-
-### Leaving the Ring
-
-- Keys are transferred to the node's successor.
-- Neighbors are notified to update pointers.
-- Finger tables are gradually fixed via stabilization.
-
----
-
-## Time Complexity Analysis
-
-| Operation                  | Time Complexity  |
-|---------------------------|------------------|
-| Lookup                    | O(log N)         |
-| Successor List Updates    | O(r)             |
-| Failure Detection (Ping)  | O(r)             |
-| Data Replication          | O(r) per key     |
-| Lookup with Fault Tolerance | O(log N + r)   |
-
-*Note: `r` is a small constant (e.g., 3–5).*
-
----
-
-## Testing & Simulations
-
-The system has been tested for:
-
-- Random node joins and leaves
-- Multiple node failures
-- Data recovery using replication
-- Self-healing via stabilization
-
----
-
-## Future Improvements
-
-- **Dynamic replication factor** based on node churn and network conditions
-- **Advanced failure detection** (e.g., gossip-based heartbeat protocols)
-- **Load balancing** for skewed data distribution
-- **Security features** such as TLS encryption and node authentication
-
----
-
+Insert Key: Insert a key-value pair into the system.
+Delete Key: Delete a key-value pair.
+Search Key: Search for a key in the system.
+Notify: Notify neighboring nodes about changes in the successor or predecessor.
+Join: Join a new node to the ring.
+Leave: Remove a node from the ring.
 
